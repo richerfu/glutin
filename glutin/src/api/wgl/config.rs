@@ -55,9 +55,10 @@ impl Display {
         let (r_size, g_size, b_size) = match template.color_buffer_type {
             ColorBufferType::Rgb { r_size, g_size, b_size } => (r_size, g_size, b_size),
             _ => {
-                return Err(
-                    ErrorKind::NotSupported("luminance buffers are not supported with WGL").into()
+                return Err(ErrorKind::NotSupported(
+                    "luminance buffers are not supported with WGL",
                 )
+                .into());
             },
         };
 
@@ -170,9 +171,10 @@ impl Display {
                 attrs.push(b_size as c_int);
             },
             _ => {
-                return Err(
-                    ErrorKind::NotSupported("luminance buffers are not supported with WGL").into()
+                return Err(ErrorKind::NotSupported(
+                    "luminance buffers are not supported with WGL",
                 )
+                .into());
             },
         }
 
@@ -443,7 +445,14 @@ impl GlConfig for Config {
         if self.inner.descriptor.as_ref().is_some() {
             None
         } else {
-            unsafe { Some(self.raw_attribute(wgl_extra::TRANSPARENT_ARB as c_int) != 0) }
+            // WGL_TRANSPARENT_ARB is not reliable and can sometimes produce
+            // false negatives. return None to provide consistent
+            // semantics, since we don't have any better way to
+            // detect
+            match unsafe { self.raw_attribute(wgl_extra::TRANSPARENT_ARB as c_int) } {
+                1 => Some(true),
+                _ => None,
+            }
         }
     }
 

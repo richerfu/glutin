@@ -89,8 +89,9 @@ impl Display {
                     GlProfile::Compatibility => glx_extra::CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
                 };
 
-                // Surfaceless contexts are supported with the GLX_ARB_create_context extension
-                // when using OpenGL 3.0 or greater.
+                // Surfaceless contexts are supported with the
+                // GLX_ARB_create_context extension when using
+                // OpenGL 3.0 or greater.
                 let supports_surfaceless = version >= Version::new(3, 0);
 
                 (Some(profile), Some(version), supports_surfaceless)
@@ -104,7 +105,7 @@ impl Display {
                 return Err(ErrorKind::NotSupported(
                     "extension to create ES context with glx is not present.",
                 )
-                .into())
+                .into());
             },
         };
 
@@ -442,11 +443,7 @@ impl ContextInner {
     }
 
     fn context_api(&self) -> ContextApi {
-        if self.is_gles {
-            ContextApi::Gles(None)
-        } else {
-            ContextApi::OpenGl(None)
-        }
+        if self.is_gles { ContextApi::Gles(None) } else { ContextApi::OpenGl(None) }
     }
 }
 

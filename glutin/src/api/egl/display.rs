@@ -28,7 +28,7 @@ use super::context::NotCurrentContext;
 use super::device::Device;
 use super::surface::Surface;
 
-use super::{Egl, EGL};
+use super::{EGL, Egl};
 
 /// Extensions that don't require any display.
 pub(crate) static CLIENT_EXTENSIONS: OnceCell<HashSet<&'static str>> = OnceCell::new();
@@ -57,8 +57,8 @@ impl Display {
 
         CLIENT_EXTENSIONS.get_or_init(|| get_extensions(egl, egl::NO_DISPLAY));
 
-        // Create a EGL display by chaining all display creation functions aborting on
-        // `EGL_BAD_ATTRIBUTE`.
+        // Create a EGL display by chaining all display creation functions
+        // aborting on `EGL_BAD_ATTRIBUTE`.
         let display = Self::get_platform_display(egl, raw_display)
             .or_else(|err| {
                 if err.error_kind() == ErrorKind::BadAttribute {
@@ -90,9 +90,8 @@ impl Display {
     /// # Safety
     ///
     /// If `raw_display` is [`Some`], `raw_display` must point to a valid
-    /// [`RawDisplayHandle::Drm`]. The provided
-    /// [`raw_display_handle::DrmDisplayHandle.fd`] may be closed after calling
-    /// this function.
+    /// [`RawDisplayHandle::Drm`]. The provided DRM file descriptor may be
+    /// closed after calling this function.
     pub unsafe fn with_device(
         device: &Device,
         raw_display: Option<RawDisplayHandle>,
@@ -106,9 +105,9 @@ impl Display {
             return Err(ErrorKind::NotSupported("eglGetPlatformDisplayEXT is not supported").into());
         }
 
-        // Okay to unwrap here because the client extensions must have been enumerated
-        // while querying the available devices or the device was gotten from an
-        // existing display.
+        // Okay to unwrap here because the client extensions must have been
+        // enumerated while querying the available devices or the device
+        // was gotten from an existing display.
         let extensions = CLIENT_EXTENSIONS.get().unwrap();
 
         if !extensions.contains("EGL_EXT_platform_base")
@@ -134,7 +133,7 @@ impl Display {
                     "`egl::display::Display::with_device()` does not support \
                      non-`DrmDisplayHandle` `RawDisplayHandle`s",
                 )
-                .into())
+                .into());
             },
             None => {},
         };
@@ -149,11 +148,12 @@ impl Display {
         // Push `egl::NONE` to terminate the list.
         attrs.push(egl::NONE as EGLint);
 
-        // NOTE: This fallback is needed because libglvnd advertises client extensions
-        // if at least one vendor library supports them. This leads to creation
-        // failures for the vendor libraries not supporting
-        // EGL_KHR_display_reference. Also according to the spec creation is allowed
-        // to fail with EGL_KHR_display_reference set to EGL_TRUE even if
+        // NOTE: This fallback is needed because libglvnd advertises client
+        // extensions if at least one vendor library supports them. This
+        // leads to creation failures for the vendor libraries not
+        // supporting EGL_KHR_display_reference. Also according to the
+        // spec creation is allowed to fail with
+        // EGL_KHR_display_reference set to EGL_TRUE even if
         // EGL_KHR_display_reference is advertised in the client extension
         // string, so just always try creation without EGL_KHR_display_reference
         // if it failed using it.
@@ -187,8 +187,8 @@ impl Display {
     pub fn device(&self) -> Result<Device> {
         let no_display_extensions = CLIENT_EXTENSIONS.get().unwrap();
 
-        // Querying the device of a display only requires EGL_EXT_device_query, but we
-        // also check if EGL_EXT_device_base is available since
+        // Querying the device of a display only requires EGL_EXT_device_query,
+        // but we also check if EGL_EXT_device_base is available since
         // EGL_EXT_device_base also provides EGL_EXT_device_query.
         if !no_display_extensions.contains("EGL_EXT_device_query")
             || !no_display_extensions.contains("EGL_EXT_device_base")
@@ -208,10 +208,11 @@ impl Display {
             )
         } == egl::FALSE
         {
-            // Check for EGL_NOT_INITIALIZED in case the display was externally terminated.
+            // Check for EGL_NOT_INITIALIZED in case the display was externally
+            // terminated.
             //
-            // EGL_BAD_ATTRIBUTE shouldn't be returned since EGL_DEVICE_EXT should be a
-            // valid display attribute.
+            // EGL_BAD_ATTRIBUTE shouldn't be returned since EGL_DEVICE_EXT
+            // should be a valid display attribute.
             return Err(super::check_error().err().unwrap_or_else(|| {
                 ErrorKind::NotSupported("failed to query device from display").into()
             }));
@@ -280,7 +281,7 @@ impl Display {
                 return Err(ErrorKind::NotSupported(
                     "`DrmDisplayHandle` must be used with `egl::display::Display::with_device()`",
                 )
-                .into())
+                .into());
             },
             RawDisplayHandle::Android(_) if extensions.contains("EGL_KHR_platform_android") => {
                 (egl::PLATFORM_ANDROID_KHR, egl::DEFAULT_DISPLAY as *mut _)
@@ -288,7 +289,7 @@ impl Display {
             _ => {
                 return Err(
                     ErrorKind::NotSupported("provided display handle is not supported").into()
-                )
+                );
             },
         };
 
@@ -302,11 +303,12 @@ impl Display {
         // Push `egl::NONE` to terminate the list.
         attrs.push(egl::NONE as EGLAttrib);
 
-        // NOTE: This fallback is needed because libglvnd advertises client extensions
-        // if at least one vendor library supports them. This leads to creation
-        // failures for the vendor libraries not supporting
-        // EGL_KHR_display_reference. Also according to the spec creation is allowed
-        // to fail with EGL_KHR_display_reference set to EGL_TRUE even if
+        // NOTE: This fallback is needed because libglvnd advertises client
+        // extensions if at least one vendor library supports them. This
+        // leads to creation failures for the vendor libraries not
+        // supporting EGL_KHR_display_reference. Also according to the
+        // spec creation is allowed to fail with
+        // EGL_KHR_display_reference set to EGL_TRUE even if
         // EGL_KHR_display_reference is advertised in the client extension
         // string, so just always try creation without EGL_KHR_display_reference
         // if it failed using it.
@@ -402,11 +404,12 @@ impl Display {
         // Push `egl::NONE` to terminate the list.
         attrs.push(egl::NONE as EGLint);
 
-        // NOTE: This fallback is needed because libglvnd advertises client extensions
-        // if at least one vendor library supports them. This leads to creation
-        // failures for the vendor libraries not supporting
-        // EGL_KHR_display_reference. Also according to the spec creation is allowed
-        // to fail with EGL_KHR_display_reference set to EGL_TRUE even if
+        // NOTE: This fallback is needed because libglvnd advertises client
+        // extensions if at least one vendor library supports them. This
+        // leads to creation failures for the vendor libraries not
+        // supporting EGL_KHR_display_reference. Also according to the
+        // spec creation is allowed to fail with
+        // EGL_KHR_display_reference set to EGL_TRUE even if
         // EGL_KHR_display_reference is advertised in the client extension
         // string, so just always try creation without EGL_KHR_display_reference
         // if it failed using it.
@@ -427,10 +430,11 @@ impl Display {
 
         platform_display.map(|display| {
             if legacy {
-                // NOTE: For angle we use the Legacy code path, as that uses CreateWindowSurface
-                // instead of CreatePlatformWindowSurface*. The latter somehow
-                // doesn't work, only the former does. But Angle's own example also use the
-                // former: https://github.com/google/angle/blob/main/util/EGLWindow.cpp#L424
+                // NOTE: For angle we use the Legacy code path, as that uses
+                // CreateWindowSurface instead of
+                // CreatePlatformWindowSurface*. The latter somehow
+                // doesn't work, only the former does. But Angle's own example
+                // also use the former: https://github.com/google/angle/blob/main/util/EGLWindow.cpp#L424
                 EglDisplay::Legacy(display)
             } else {
                 EglDisplay::Ext(display)
@@ -445,7 +449,7 @@ impl Display {
                 return Err(ErrorKind::NotSupported(
                     "`DrmDisplayHandle` must be used with `egl::display::Display::with_device()`",
                 )
-                .into())
+                .into());
             },
             RawDisplayHandle::Xlib(XlibDisplayHandle { display, .. }) => {
                 display.map_or(egl::DEFAULT_DISPLAY as *mut _, |d| d.as_ptr())
@@ -456,7 +460,7 @@ impl Display {
             _ => {
                 return Err(
                     ErrorKind::NotSupported("provided display handle is not supported").into()
-                )
+                );
             },
         };
 
@@ -483,7 +487,7 @@ impl Display {
 
         supported_features.set(
             DisplayFeatures::CONTEXT_ROBUSTNESS,
-            version > Version::new(1, 5)
+            version >= Version::new(1, 5)
                 || extensions.contains("EGL_EXT_create_context_robustness"),
         );
 
@@ -497,8 +501,8 @@ impl Display {
 
     fn check_display_error(display: EGLDisplay) -> Result<EGLDisplay> {
         if display == egl::NO_DISPLAY {
-            // XXX the specification is a bit vague here, so fallback instead of hard
-            // assert.
+            // XXX the specification is a bit vague here, so fallback instead of
+            // hard assert.
             Err(super::check_error().err().unwrap_or_else(|| {
                 ErrorKind::NotSupported("failed to create EGLDisplay without a reason").into()
             }))
@@ -530,8 +534,10 @@ impl Display {
                 if client_extensions.contains("EGL_EXT_platform_base")
                     && (version == Version { major: 1, minor: 4 })
                 {
-                    // `EGL_EXT_platform_base` requires EGL 1.4 per specification; we cannot safely
-                    // presume that an `Ext` display would be valid for older versions.
+                    // `EGL_EXT_platform_base` requires EGL 1.4 per
+                    // specification; we cannot safely
+                    // presume that an `Ext` display would be valid for older
+                    // versions.
                     EglDisplay::Ext(display)
                 } else {
                     EglDisplay::Legacy(display)
@@ -656,10 +662,10 @@ impl DisplayInner {
             return false;
         }
 
-        // If the EGL_TRACK_REFERENCES_KHR attribute is true, then EGL will internally
-        // reference count the display. If that is the case, glutin can
-        // terminate the display without worry for the instance being
-        // reused elsewhere.
+        // If the EGL_TRACK_REFERENCES_KHR attribute is true, then EGL will
+        // internally reference count the display. If that is the case,
+        // glutin can terminate the display without worry for the
+        // instance being reused elsewhere.
         let mut track_references = MaybeUninit::<EGLAttrib>::uninit();
         (match self.raw {
             EglDisplay::Khr(khr) => unsafe {

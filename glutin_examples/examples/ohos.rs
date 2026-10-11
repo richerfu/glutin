@@ -8,7 +8,7 @@ use winit::platform::ohos::EventLoopBuilderExtOpenHarmony;
 
 #[ability]
 pub fn openharmony(openharmony_app: OpenHarmonyApp) {
-    let a = openharmony_app.clone();
-    let event_loop = EventLoop::builder().with_openharmony_app(a).build().unwrap();
-    glutin_examples::main(event_loop).unwrap()
+    let event_loop = EventLoop::builder().with_openharmony_app(openharmony_app).build().unwrap();
+    // The OHOS backend retains the owned application and returns to Ability.
+    glutin_examples::main(event_loop).unwrap();
 }

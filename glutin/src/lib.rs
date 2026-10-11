@@ -16,13 +16,12 @@
 
 #![deny(rust_2018_idioms)]
 #![deny(rustdoc::broken_intra_doc_links)]
-#![deny(unsafe_op_in_unsafe_fn)]
 #![deny(improper_ctypes, improper_ctypes_definitions)]
 #![deny(clippy::all)]
 #![deny(missing_debug_implementations)]
 #![deny(missing_docs)]
 #![cfg_attr(clippy, deny(warnings))]
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 #[cfg(all(not(egl_backend), not(glx_backend), not(wgl_backend), not(cgl_backend)))]
 compile_error!("Please select at least one api backend");

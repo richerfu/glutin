@@ -5,7 +5,7 @@ use std::marker::PhantomData;
 use std::ops::Deref;
 
 use glutin_egl_sys::egl::types::{EGLenum, EGLint};
-use glutin_egl_sys::{egl, EGLContext};
+use glutin_egl_sys::{EGLContext, egl};
 
 use crate::config::{Api, GetGlConfig};
 use crate::context::{
@@ -51,7 +51,7 @@ impl Display {
             _ => {
                 return Err(
                     ErrorKind::NotSupported("the requested context Api isn't supported.").into()
-                )
+                );
             },
         };
 
@@ -105,7 +105,7 @@ impl Display {
                 _ => {
                     return Err(
                         ErrorKind::NotSupported("context robustness is not supported").into()
-                    )
+                    );
                 },
             }
 
@@ -119,8 +119,9 @@ impl Display {
                 attrs.push(flags as EGLint);
             }
         } else if self.inner.version >= Version::new(1, 3) {
-            // EGL 1.3 uses that to indicate client version instead of major/minor. The
-            // constant is the same as `CONTEXT_MAJOR_VERSION`.
+            // EGL 1.3 uses that to indicate client version instead of
+            // major/minor. The constant is the same as
+            // `CONTEXT_MAJOR_VERSION`.
             if let Some(version) = version {
                 attrs.push(egl::CONTEXT_CLIENT_VERSION as EGLint);
                 attrs.push(version.major as EGLint);
@@ -130,8 +131,8 @@ impl Display {
         if let Some(priority) = context_attributes.priority.filter(|_| {
             let extensions = &self.inner.display_extensions;
 
-            // Some android versions don't report support for this extension, even though
-            // it's supported.
+            // Some android versions don't report support for this extension,
+            // even though it's supported.
             //
             // https://github.com/googlevr/gvr-android-sdk/issues/330
             #[cfg(android_platform)]

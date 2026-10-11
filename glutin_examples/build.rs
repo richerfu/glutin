@@ -6,6 +6,9 @@ use cfg_aliases::cfg_aliases;
 use gl_generator::{Api, Fallbacks, Profile, Registry, StructGenerator};
 
 fn main() {
+    if env::var("CARGO_CFG_TARGET_ENV").as_deref() == Ok("ohos") {
+        napi_build_ohos::setup();
+    }
     // XXX this is taken from glutin/build.rs.
 
     // Setup alias to reduce `cfg` boilerplate.

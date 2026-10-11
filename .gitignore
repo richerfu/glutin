@@ -4,3 +4,6 @@ target/
 *~
 #*#
 glutin_examples/dist
+
+# Native examples built by ohrs from the workspace root.
+/dist/

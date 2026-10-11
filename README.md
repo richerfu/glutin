@@ -60,19 +60,22 @@ and start the app using:
 $ cargo apk r -p glutin_examples --example android
 ```
 
-### OpenHarmony/HarmonyNext
+### OpenHarmony / HarmonyOS NEXT
 
-Be sure to handle OpenHarmony's lifecycle correctly when using a `winit` window
-by only creating a GL surface after `winit` raises `Event::Resumed`, and
-destroy it again upon receiving `Event::Suspended`. See this in action in the
-[`ohos.rs` example](./glutin_examples/examples/ohos.rs).
+The existing [`ohos.rs` example](./glutin_examples/examples/ohos.rs) uses the
+Ability-backed winit 0.31 event loop. Create the GL surface in
+`ApplicationHandler::can_create_surfaces` and release it in `destroy_surfaces`.
+On OpenHarmony, `run_app` retains the owned application and returns to the
+Ability UI thread; the previous `spawn_app` entry point is no longer needed.
 
-To compile and run the OpenHarmony example on your device,
-install [`ohrs`](https://crates.io/crates/ohrs)
-and start the app using:
+Set `OHOS_NDK_HOME` to the OpenHarmony SDK directory containing `native/`,
+install [`ohrs`](https://crates.io/crates/ohrs), then build the native example:
 
 ```console
-$ ohrs build --arch aarch -- -p glutin_examples --example ohos
+$ ohrs build --arch arm64 -p glutin_examples -- --example ohos --no-default-features --features egl
 ```
 
-Then copy the `$PWD/dist/arm64-v8a/libohos.so` into your OpenHarmony or HarmonyNext project.
+The packaged output is `dist/arm64-v8a/libohos.so`. This is the native module;
+package it in an ArkTS application using the same Ability revision and its
+matching HARs. The example does not assemble or install a HAP.
+The workspace pins the updated OHOS backend and requires Rust 1.88 for OHOS.

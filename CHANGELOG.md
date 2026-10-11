@@ -1,7 +1,19 @@
 # Unreleased
 
-- **Breaking:** Added `make_current_surfaceless(self)` for `{Possibly,Not}CurrentGlContext`.
 - Added OpenHarmony support for `glutin-winit`.
+
+- **Breaking:** Added `make_current_surfaceless(self)` for `{Possibly,Not}CurrentGlContext`.
+- Updated `objc2` frameworks dependency to `v0.3.2`.
+- Use `objc2-open-gl` instead of `cgl` dependency.
+- Bump MSRV from `1.71` to `1.86`.
+- Fixed EGL's robustness detection without extension, but on EGL 1.5.
+- Fixed building docs on docs.rs.
+- Fixed WGL's unreliable TRANSPARENT_ARB false negatives by returning None
+
+# Version 0.32.3
+
+- Bump MSRV from `1.70` to `1.71`.
+- Updated `objc2` dependency to `v0.6`.
 
 # Version 0.32.2
 

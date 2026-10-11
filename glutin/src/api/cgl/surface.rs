@@ -4,9 +4,10 @@ use std::fmt;
 use std::marker::PhantomData;
 use std::num::NonZeroU32;
 
-use objc2::rc::Id;
+use dispatch2::{MainThreadBound, run_on_main};
+use objc2::MainThreadMarker;
+use objc2::rc::Retained;
 use objc2_app_kit::{NSAppKitVersionNumber, NSAppKitVersionNumber10_12, NSView};
-use objc2_foundation::{run_on_main, MainThreadBound, MainThreadMarker};
 use raw_window_handle::RawWindowHandle;
 
 use crate::config::GetGlConfig;
@@ -49,7 +50,7 @@ impl Display {
             _ => {
                 return Err(
                     ErrorKind::NotSupported("provided native window is not supported").into()
-                )
+                );
             },
         };
 
@@ -60,25 +61,27 @@ impl Display {
         // SAFETY: Validity of the view and window is ensured by caller
         // This function makes sure the window is non null.
         let ns_view = if let Some(ns_view) =
-            unsafe { Id::retain(native_window.ns_view.as_ptr().cast::<NSView>()) }
+            unsafe { Retained::retain(native_window.ns_view.as_ptr().cast::<NSView>()) }
         {
             ns_view
         } else {
             return Err(ErrorKind::NotSupported("ns_view of provided native window is nil").into());
         };
 
-        // The default value of `wantsBestResolutionOpenGLSurface` is `false` when
-        // linked with the macOS 10.14 SDK and `true` if linked with a macOS 10.15 SDK
-        // or newer. We always set it to `true` because we want High DPI surfaces, and
-        // we want to avoid this confusing default system value.
+        // The default value of `wantsBestResolutionOpenGLSurface` is `false`
+        // when linked with the macOS 10.14 SDK and `true` if linked
+        // with a macOS 10.15 SDK or newer. We always set it to `true`
+        // because we want High DPI surfaces, and we want to avoid this
+        // confusing default system value.
         #[allow(deprecated)]
         ns_view.setWantsBestResolutionOpenGLSurface(true);
 
-        // On Mojave, views apparently automatically become layer-backed shortly after
-        // being added to a window. Changing the layer-backedness of a view breaks the
-        // association between the view and its associated OpenGL context. To work
-        // around this, we explicitly make the view layer-backed up front so that AppKit
-        // doesn't do it itself and break the association with its context.
+        // On Mojave, views apparently automatically become layer-backed shortly
+        // after being added to a window. Changing the layer-backedness
+        // of a view breaks the association between the view and its
+        // associated OpenGL context. To work around this, we explicitly
+        // make the view layer-backed up front so that AppKit doesn't do
+        // it itself and break the association with its context.
         if unsafe { NSAppKitVersionNumber }.floor() > NSAppKitVersionNumber10_12 {
             ns_view.setWantsLayer(true);
         }
@@ -100,7 +103,7 @@ impl Display {
 pub struct Surface<T: SurfaceTypeTrait> {
     display: Display,
     config: Config,
-    pub(crate) ns_view: MainThreadBound<Id<NSView>>,
+    pub(crate) ns_view: MainThreadBound<Retained<NSView>>,
     _nosync: PhantomData<*const std::ffi::c_void>,
     _ty: PhantomData<T>,
 }
@@ -190,9 +193,10 @@ impl<T: SurfaceTypeTrait> GetGlDisplay for Surface<T> {
 
 impl<T: SurfaceTypeTrait> AsRawSurface for Surface<T> {
     fn raw_surface(&self) -> RawSurface {
-        // SAFETY: We only use the thread marker to get the pointer value of the view
+        // SAFETY: We only use the thread marker to get the pointer value of the
+        // view
         let mtm = unsafe { MainThreadMarker::new_unchecked() };
-        RawSurface::Cgl(Id::as_ptr(self.ns_view.get(mtm)).cast())
+        RawSurface::Cgl(Retained::as_ptr(self.ns_view.get(mtm)).cast())
     }
 }
 

@@ -1,5 +1,5 @@
 [workspace]
-resolver = "2"
+resolver = "3"
 members = [
     "glutin",
     "glutin-winit",
@@ -7,5 +7,16 @@ members = [
     "glutin_egl_sys",
     "glutin_glx_sys",
     "glutin_wgl_sys",
-    "glutin_gles2_sys",
 ]
+
+[workspace.package]
+# MSRV. Also update in ci.yml
+rust-version = "1.86.0"
+edition = "2024"
+
+# Keep the facade, core and geometry types on the same OpenHarmony beta revision.
+[patch.crates-io]
+winit = { git = "https://github.com/richerfu/winit.git", rev = "c9ee2bff8a79aacb8068546e7150197693d35a5a" }
+winit-core = { git = "https://github.com/richerfu/winit.git", rev = "c9ee2bff8a79aacb8068546e7150197693d35a5a" }
+dpi = { git = "https://github.com/richerfu/winit.git", rev = "c9ee2bff8a79aacb8068546e7150197693d35a5a" }
+winit-ohos = { git = "https://github.com/ohos-rs/winit-ohos.git", rev = "6f9ed13689547f9d38b18396cf97b45c7c374f50" }
